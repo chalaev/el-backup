@@ -1,0 +1,168 @@
+#!/bin/bash
+
+# this script should be run with admin (root) rights
+# it is as simple and short as possible
+
+# for security reasons the following symbols are not allowed in configuration file:
+secretConf=/etc/el-backup/secret.conf # contains gpg password
+publicConf=/etc/el-backup/public.conf # should be readable by non-root users
+
+# reading config files
+if ! [ -f $secretConf ]; then
+    echo "refuse to start because config file $secretConf does not exist"
+    exit -1
+fi
+
+if ! [ -f $publicConf ]; then
+    echo "refuse to start because config file $publicConf does not exist"
+    exit -1
+fi
+
+. /usr/local/bin/el-backup/common.sh
+readConf $secretConf password remoteDir users sysFiles
+readConf $publicConf localDir maxMicro maxMeso # these data will be read by elisp as well
+
+if ! [ -d ${localDir} ]; then
+    echo "refuse to start because local backup directory ${localDir} (defined in $publicConf) does not exist"
+    exit -1
+fi
+
+PBD=${localDir}backup.version
+lock=${localDir}lock
+
+#################
+# This code is for system configuration files; all of them are nicely named, so
+# I do not need cumbersome quoting or "-print0" argument for "find"
+function process_object {
+local files
+if [ -f $1 ]
+then
+    collect $localDir ${MMM} $1
+elif [ -d $1 ]
+then
+    echo "exploring directory $1"
+    files=`find $1 -type f -cnewer ${previousArchive}`
+    collect $localDir ${MMM} $files
+fi
+}
+################# locking the directory
+if `mkdir ${lock}`; then
+# checking if this is the very first backup:
+if ! [ -f ${PBD} ]
+then
+    echo "this is the very first backup"
+    echo "0 0 0" > ${PBD}
+    touch -d "1980-01-01" ${PBD}
+    previousArchive=${PBD}
+    micro=0
+    meso=0
+    macro=0
+else
+# using three previously saved version numbers:
+vvv=$(<${PBD})
+vvv=($vvv)
+macro=${vvv[0]}
+meso=${vvv[1]}
+micro=${vvv[2]}
+
+echo "The previous archive level was ${macro}-${meso}-${micro}"
+
+# evaluating new (3-digit) version and cleaning obsolete archives:
+
+prevMicro=$micro
+prevMeso=$meso
+prevMacro=$macro
+
+MMM=${macro}-${meso}-${micro}
+OBV=${localDir}${MMM}/backup.version
+cp -a ${localDir}backup.version $OBV
+
+micro=$(( 1 + $micro ))
+
+if [ $micro -gt $maxMicro ]; then
+    if [ $meso -gt 0 ]; then
+	echo -e "removing obsolete archives:\n`ls -lh ${localDir}${macro}-$(( $meso -1 ))-*`\n`ls -lh ${remoteDir}${macro}-$(( $meso -1 ))-*`"
+	echo "rm -r ${localDir}${macro}-$(( $meso -1 ))-*"
+	rm -r ${localDir}${macro}-$(( $meso -1 ))-*
+	echo "rm ${remoteDir}${macro}-$(( $meso -1 ))-*"
+	rm ${remoteDir}${macro}-$(( $meso -1 ))-*
+    fi
+    meso=$(( 1 + $meso ))
+    micro=0
+    prevMicro=0
+fi
+
+if [ $meso -gt $maxMeso ]; then
+    if [ $macro -gt 0 ]; then
+	echo -e "removing obsolete archives:\n`ls -lh ${localDir}${macro}-$(( $meso -1 ))-* ${remoteDir}${macro}-$(( $meso -1 ))-*`"
+	echo "rm -r ${localDir}$(( $macro -1 ))-*"
+	rm -r ${localDir}$(( $macro -1 ))-*
+	echo "rm ${remoteDir}$(( $macro -1 ))-*"
+	rm ${remoteDir}$(( $macro -1 ))-*
+    fi
+    macro=$(( 1 + $macro ))
+    micro=0
+    meso=0
+    prevMicro=0
+    prevMeso=0
+fi
+
+# to be changed to local archive copy →
+previousArchive=${remoteDir}${prevMacro}-${prevMeso}-${prevMicro}.gpg
+echo "debug: previousArchive=$previousArchive"
+fi
+
+MMM=${macro}-${meso}-${micro}
+echo "${macro} ${meso} ${micro}" > ${PBD}
+touch -r $OBV ${PBD}
+chmod a+r ${PBD}
+
+if ! [ -d ${localDir}${MMM} ]; then
+    mkdir ${localDir}${MMM} && chgrp tmp ${localDir}${MMM} && chmod o+rwx ${localDir}${MMM}
+fi
+
+# the following loop creates list of (text and not too large) files to be archieved:
+for file in $sysFiles; do
+    process_object $file
+done
+
+RL=${localDir}${MMM}/root.list
+if [ -f $RL ]; then
+    chgrp tmp $RL
+    tar cfv ${localDir}${MMM}.tar --files-from=$RL
+    gzip $RL
+fi
+# ← some of those files are readable only for root, and this is why this script runs with root privileges
+
+GPG="gpg --batch --yes --pinentry-mode loopback --passphrase \"$password\" -o"
+
+# user files will be selected by elisp (emacs):
+for user in $users; do
+    echo "selecting files for $user"
+    su $user -c "emacsclient -e \"(progn (require 'backup) (backup-do))\"  || emacs -q --no-site-file --batch -l ~/.emacs.d/batch-start.el -l backup -f backup-do"
+    if [ -f ${localDir}${MMM}/${user}.list ]; then
+	tar uf ${localDir}${MMM}.tar --files-from=${localDir}${MMM}/${user}.list
+	if `mkdir ${remoteDir}lock`
+	then
+	    $GPG ${remoteDir}${MMM}.${user}.gpg --symmetric ${localDir}${MMM}/${user}.list
+	    gzip ${localDir}${MMM}/${user}.*
+	    chgrp tmp ${localDir}${MMM}/${user}.*
+	    rmdir ${remoteDir}lock
+	fi
+    fi
+done
+# created /mnt/junk/backup/0-0-0.shalaev.list + /mnt/junk/backup/0-0-0.shalaev.rejected
+
+touch ${PBD}
+
+echo "copying archieve to the cloud"
+
+if `mkdir ${remoteDir}lock`; then # checkinng if remote dir is mounted
+    $GPG ${remoteDir}${MMM}.gpg --symmetric ${localDir}${MMM}.tar && \
+rmdir ${remoteDir}lock && rmdir ${lock} && echo "backup finished" || echo "something went wrong"
+fi
+# it is useful to have local archive copy:
+bzip2 ${localDir}${MMM}.tar
+else
+    echo "DOING NOTHING because lock file/dir $lock detected"
+fi

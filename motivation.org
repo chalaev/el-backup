@@ -1,0 +1,20 @@
+* Motivation
+For 10+ years I used [[https://github.com/gkiefer/backup2l][backup2l]], but in December 2020 I've got problems with it and realized that
+1. its code is long and has no comments/explanations so that it would take too much time for me to analyze it,
+2. it lacks logging /during/ backup process,
+3. it has zero tolerance for mistakes in its configuration file,
+4. its development has probably stopped: for 7+ months [[https://github.com/gkiefer/backup2l/issues/19][my patch proposal]] remained unanswered, and
+5. actually I could write a replacement quite fast based on [[https://github.com/chalaev/cloud][my cloud project]].
+
+The final drop/straw came when [[https://github.com/gkiefer/backup2l][backup2l]] was copying its newer archive to [[https://disk.yandex.com/][Yandex Disk]] for more than 48 hours!
+Yes,  [[https://disk.yandex.com/][Yandex Disk]] is slow, but still 48 hours is a lot of time and I've got upset with that because
+1. I do not understand why it wants to archive so many files and
+2. there is no any kind of logging system: [[https://github.com/gkiefer/backup2l][backup2l]] does not report me about what's going on, I do not know if it is doing the
+   right thing now (so I should better wait) or it has gone crazy and I must kill it immediately.
+
+At first I've tried to write my own [[https://github.com/gkiefer/backup2l][backup2l]] in ~bash~, but got mad because of how slow I was progressing.
+(In fact, LISP has spoiled me – I almost forgot how boring programming can be when the language is inefficient.)
+
+So I decided to separate my backup system in two parts:
+1. the [[file:el-backup][(simple and short) code]] which is run with ~root~ privileges is written in ~bash~, and
+2. the [[file:packaged/backup.el][main part of the code]] written in eLisp.
