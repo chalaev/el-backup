@@ -3,11 +3,11 @@
 ;; Copyright (C) 2020 Oleg Shalaev <oleg@chalaev.com>
 
 ;; Author:     Oleg Shalaev <oleg@chalaev.com>
-;; Version:    0.0.1
+;; Version:    0.0.2
 
 ;; Package-Requires: (shalaev)
 ;; Keywords:   backup, gpg, encryption
-;; URL:        https://github.com/chalaev/backup
+;; URL:        https://github.com/chalaev/el-backup
 
 ;;; Commentary:
 
@@ -16,11 +16,11 @@
 ;; 2. saves the list of recently changed important user files
 
 ;; For quick start and documentation see
-;; https://github.com/chalaev/backup
+;; https://github.com/chalaev/el-backup
   
 ;;; Code:
 (require 'shalaev)
-(letf((black-groups '("tmp"))
+(lett((black-groups '("tmp"))
 (white-groups (split-string "important keepOneYear keepTwoYears keepThreeYears"))
 (white-extensions (split-string "asd patch bib fig svg diff mk json txt org conf el lisp sh mk tex sql html css js py c h cpp c++ pl gnp sed awk sk pov ini"))
 (grey-extensions (split-string "pdf jpg jpeg png xcf"))

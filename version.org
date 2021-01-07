@@ -1,3 +1,3 @@
-0.0.1
-← generated 01/05 14:34 from [[file:change-log.org][change-log.org]]
+0.0.2
+← generated 01/06 20:09 from [[file:change-log.org][change-log.org]]
 by [[file:helpers/derive-version.el][derive-version.el]]

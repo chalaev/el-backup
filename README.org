@@ -39,7 +39,7 @@ There is no special command to restore the files; the user is supposed to do it 
 2. [[file:el-backup][el-backup]] is supposed to be run from ~/etc/cron.daily/~  by ~root~ user; it uses the code from
 3. [[file:common.sh][common.sh]] updates contents file; this file (containing names of the files to be archived) will be then used by =tar=,
 4. [[file:Makefile][Makefile]] to =make= them all,
-5. [[file:packaged/backup.el][packaged/backup.el]] for those who do not want to =make=. It should be copied in a directory from where emacs can load it using
+5. [[file:packaged/backup.el][packaged/backup.el]] for those who do not want to =make=. It should be copied to =~/.emacs.d/local-packages/= or another a directory from where emacs can load it using
    either =emacsclient= or =emacs= command in [[file:el-backup][el-backup]].
 6. [[file:secret.conf][secret.conf]] and [[file:public.conf][public.conf]] are (examples of) system configuration files, see Quick Start above.
 7. [[file:el-backup.conf][el-backup.conf]] is the user configuration file which is processed by the [[file:packaged/backup.el][eLisp code]].

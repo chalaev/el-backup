@@ -1,3 +1,6 @@
 * initial release
+*** 01/06
+renamed =letf= → =lett=
+
 *** 2021-01-05
 Publishing the code after 10 days of usage.

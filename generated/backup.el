@@ -1,5 +1,5 @@
 (require 'shalaev)
-(letf((black-groups '("tmp"))
+(lett((black-groups '("tmp"))
 (white-groups (split-string "important keepOneYear keepTwoYears keepThreeYears"))
 (white-extensions (split-string "asd patch bib fig svg diff mk json txt org conf el lisp sh mk tex sql html css js py c h cpp c++ pl gnp sed awk sk pov ini"))
 (grey-extensions (split-string "pdf jpg jpeg png xcf"))
