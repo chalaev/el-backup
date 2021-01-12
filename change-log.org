@@ -1,4 +1,15 @@
 * initial release
+** Corrected (bash) cleaning block
+It was removing more older archives than it should.
+
+*** 01/12
+Two problems fixed:
+1. The code was deleting previous major ("macro") archives  when creating new one.
+2. During creation of new macro N-archive (having indices N-0-0) the code /was/ removing all /previous/ macro archives with indices M-*-* (where M=N-1).
+   Now when a new macro N-archive is created, only archives with indices M-*-* (where M=N-2) except for M-0-0 are erased.
+   (There was a similar problem with meso-archives which is also fixed.)
+
+** Should be safe to use
 *** 01/06
 renamed =letf= → =lett=
 

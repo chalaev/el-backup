@@ -1,16 +1,15 @@
 
 # Table of Contents
 
-1.  [Requirements](#org16f9c33)
-2.  [Quick Start](#org9a9b6e3)
-3.  [Backup philosophy](#org0c328c4)
-4.  [Files](#org507bbe9)
-5.  [License](#org4bf91b1)
+1.  [Requirements](#org888d782)
+2.  [Quick Start](#org4c618af)
+3.  [Backup philosophy](#org5e674a8)
+4.  [License](#org57dda06)
 
 Simple backup system for Linux users who use `emacs` a lot.
 
 
-<a id="org16f9c33"></a>
+<a id="org888d782"></a>
 
 # Requirements
 
@@ -19,7 +18,7 @@ Simple backup system for Linux users who use `emacs` a lot.
 3.  [~/.emacs.d/batch-start.el](https://github.com/chalaev/lisp-goodies/blob/master/packaged/batch-start.el) (needed for `emacsclient` called in [el-backup](el-backup)).
 
 
-<a id="org9a9b6e3"></a>
+<a id="org4c618af"></a>
 
 # Quick Start
 
@@ -38,7 +37,7 @@ Simple backup system for Linux users who use `emacs` a lot.
     Their encrypted copies in remote directory will be `X-Y-Z.gpg` and `X-Y-Z.user.gpg`
 
 
-<a id="org0c328c4"></a>
+<a id="org5e674a8"></a>
 
 # Backup philosophy
 
@@ -58,21 +57,7 @@ There is no special command to restore the files; the user is supposed to do it 
 3.  If needed, decrypt the archive. Extract the file from the `tar` archive.
 
 
-<a id="org507bbe9"></a>
-
-# Files
-
-1.  [backup.org](backup.org) – contains elisp-part of the backup code, which is responsible for user-owned files,
-2.  [el-backup](el-backup) is supposed to be run from `/etc/cron.daily/`  by `root` user; it uses the code from
-3.  [common.sh](common.sh) updates contents file; this file (containing names of the files to be archived) will be then used by `tar`,
-4.  [Makefile](Makefile) to `make` them all,
-5.  [packaged/backup.el](packaged/backup.el) for those who do not want to `make`. It should be copied to `~/.emacs.d/local-packages/` or another a directory from where emacs can load it using
-    either `emacsclient` or `emacs` command in [el-backup](el-backup).
-6.  [secret.conf](secret.conf) and [public.conf](public.conf) are (examples of) system configuration files, see Quick Start above.
-7.  [el-backup.conf](el-backup.conf) is the user configuration file which is processed by the [eLisp code](packaged/backup.el).
-
-
-<a id="org4bf91b1"></a>
+<a id="org57dda06"></a>
 
 # License
 

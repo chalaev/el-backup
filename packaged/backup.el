@@ -3,7 +3,7 @@
 ;; Copyright (C) 2020 Oleg Shalaev <oleg@chalaev.com>
 
 ;; Author:     Oleg Shalaev <oleg@chalaev.com>
-;; Version:    0.0.2
+;; Version:    0.2.1
 
 ;; Package-Requires: (shalaev)
 ;; Keywords:   backup, gpg, encryption
@@ -26,23 +26,26 @@
 (grey-extensions (split-string "pdf jpg jpeg png xcf"))
 (black-extensions (split-string "jar ex list db vcproj pm o ttf ac3 afm aux idx ilg ind avi bak bbl blg brf bst bz2 cache chm cp cps dat deb dvi dv eps fb2 fn fls img iso gpx segments ky mjpeg m md mov mpg mkv jpg gif jpeg png log mp3 mp4 m2v ogg ogm out part pbm pfb pg pod pgm pnm ps rar raw gz sfd woff tbz tgz tga tif tiff toc tp vob vr wav xml xz Z zip"))
 (white-names '("Makefile"))
-to-be-saved; list of files to be archieved
+email to-be-saved; list of files to be archieved
 rejected; list of rejected files
 
 (conf-dir (need-dir emacs-d "conf"))
 (conf-file (concat conf-dir "el-backup.conf"))
-(par-names (split-string "black-groups white-groups white-extensions grey-extensions black-extensions white-names to-be-saved rejected"))
+(lists-of-strings (split-string "black-root-dirs black-matches black-groups white-groups white-extensions grey-extensions black-extensions white-names to-be-saved rejected"))
+(str-params '("email"))
 (defun read-conf(); reads configuration file
 (needs ((conf (read-conf-file conf-file) (clog :error "could not read %s" conf-file)))
-(dolist(CP (mapcar #'car conf))
-  (when(member CP par-names)
-
-(setcdr (assoc CP conf) (split-string(cdr(assoc CP conf))))))
+(dolist (CP (mapcar #'car conf))
+  (setcdr (assoc CP conf)
+    (cond
+((member CP str-params) (car (split-string (cdr (assoc CP conf)))))
+((member CP lists-of-strings) (split-string (cdr (assoc CP conf)))))))
 conf))
+
 (maxDirRecursion 7)
 (pubConf "/etc/el-backup/public.conf")
-black-dirs
 (black-matches (split-string "tmp /old /log /Downloads /Загрузки /.git/"))
+(black-root-dirs (split-string "/tmp/ /etc/"))
 
 (file-fields; indices numerating array fields
 (list
@@ -54,7 +57,7 @@ black-dirs
 'modes))); permissions
 (let((i 0)) (dolist (field-name file-fields) (setf i (1+ (set field-name i)))))
 
-(apply #'update-conf (cons (read-conf) par-names))
+(update-conf (read-conf) (append str-params lists-of-strings))
 
 (defun backup-black-p(FN &optional FR)
 (ifn-let ((FR(or FR(get-file-properties FN)))) t
@@ -63,10 +66,10 @@ black-dirs
    (member group black-groups)
    (member ext black-extensions) (backup-file-name-p FN)
    (string-match (eval `(rx ,(cons 'or black-matches))) FN)
+   (when black-matches  (string-match (eval `(rx ,(cons 'or black-matches))) FN))
+   (when black-root-dirs(string-match (eval `(rx bol ,(cons 'or black-root-dirs))) FN))
    (string-match (to-dir ~ "local") FN) (string-match (concat ~ "\\.") FN)
-   (string-match "^#.*#$" (file-name-nondirectory FN))
-(when black-dirs
-   (string-match(substring(apply #'concat (mapcar #'(lambda(d)(format "\\(^%s\\)\\|" d)) black-dirs)) 0 -2) FN))))))
+   (string-match "^#.*#$" (file-name-nondirectory FN))))))
 (defun backup-white-p(FN &optional FR)
 (when-let((FR(or FR(get-file-properties FN))) (group(aref FR gname)) (ext(file-name-extension FN)))
   (or (member group white-groups) (member ext white-extensions) (member(file-name-nondirectory FN) white-names))))

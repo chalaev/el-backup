@@ -3,7 +3,6 @@
 # this script should be run with admin (root) rights
 # it is as simple and short as possible
 
-# for security reasons the following symbols are not allowed in configuration file:
 secretConf=/etc/el-backup/secret.conf # contains gpg password
 publicConf=/etc/el-backup/public.conf # should be readable by non-root users
 
@@ -32,7 +31,7 @@ lock=${localDir}lock
 
 #################
 # This code is for system configuration files; all of them are nicely named, so
-# I do not need cumbersome quoting or "-print0" argument for "find"
+# we do not need cumbersome quoting or "-print0" argument for "find"
 function process_object {
 local files
 if [ -f $1 ]
@@ -79,13 +78,25 @@ cp -a ${localDir}backup.version $OBV
 
 micro=$(( 1 + $micro ))
 
+# removing obsolete archives if needed:
+
 if [ $micro -gt $maxMicro ]; then
     if [ $meso -gt 0 ]; then
-	echo -e "removing obsolete archives:\n`ls -lh ${localDir}${macro}-$(( $meso -1 ))-*`\n`ls -lh ${remoteDir}${macro}-$(( $meso -1 ))-*`"
-	echo "rm -r ${localDir}${macro}-$(( $meso -1 ))-*"
-	rm -r ${localDir}${macro}-$(( $meso -1 ))-*
-	echo "rm ${remoteDir}${macro}-$(( $meso -1 ))-*"
-	rm ${remoteDir}${macro}-$(( $meso -1 ))-*
+	if [ $prevMeso -gt 1 ]; then
+	    ppMeso=$(( $prevMeso - 1 ))
+	    
+	    tmpDir=`mktemp -d -p ${localDir}$`
+	    mv ${localDir}${macro}-${ppMeso}-0* $tmpDir/
+	    rm -r ${localDir}${macro}-${ppMeso}-*-
+	    mv $tmpDir/* ${localDir}
+	    rmdir $tmpDir
+	    
+	    tmpDir=`mktemp -d -p ${remoteDir}$`
+	    mv ${remoteDir}${macro}-${ppMeso}-0* $tmpDir/
+	    rm -r ${remoteDir}${macro}-${ppMeso}-*-
+	    mv $tmpDir/* ${remoteDir}
+	    rmdir $tmpDir
+	fi
     fi
     meso=$(( 1 + $meso ))
     micro=0
@@ -94,11 +105,21 @@ fi
 
 if [ $meso -gt $maxMeso ]; then
     if [ $macro -gt 0 ]; then
-	echo -e "removing obsolete archives:\n`ls -lh ${localDir}${macro}-$(( $meso -1 ))-* ${remoteDir}${macro}-$(( $meso -1 ))-*`"
-	echo "rm -r ${localDir}$(( $macro -1 ))-*"
-	rm -r ${localDir}$(( $macro -1 ))-*
-	echo "rm ${remoteDir}$(( $macro -1 ))-*"
-	rm ${remoteDir}$(( $macro -1 ))-*
+	if [ $prevMacro -gt 1 ]; then
+	    ppMacro=$(( $prevMacro - 1 ))
+
+	    tmpDir=`mktemp -d -p ${localDir}$`
+	    mv ${localDir}${ppMacro}-0-0* $tmpDir/
+	    rm -r ${localDir}${ppMacro}-*-
+	    mv $tmpDir/* ${localDir}
+	    rmdir $tmpDir
+	    
+	    tmpDir=`mktemp -d -p ${remoteDir}$`
+	    mv ${remoteDir}${ppMacro}-0-0* $tmpDir/
+	    rm -r ${remoteDir}${ppMacro}-*-
+	    mv $tmpDir/* ${remoteDir}
+	    rmdir $tmpDir
+	fi
     fi
     macro=$(( 1 + $macro ))
     micro=0
