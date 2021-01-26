@@ -1,6 +1,16 @@
 * initial release
+** Corrected dangerous error
+*** 01/26
+The update 01/13 damaged my linux system; hopefully no one suffered from it.
+
 ** Corrected (bash) cleaning block
 It was removing more older archives than it should.
+
+*** 01/13
+Major releases became more special than before. Assuming that the release's version is =N-0-0=,
+1. The file =N-0-0/previous.gz= is a sorted list of previous files names presented in all previous archives.
+2. Not only recently modified files are archived, but also those with names missing in =N-0-0/previous.gz=
+3. Names of the newly detected file names (no mater what's the modification date) are saved to =N-0-0/new.gz=
 
 *** 01/12
 Two problems fixed:

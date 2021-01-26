@@ -1,24 +1,24 @@
 
 # Table of Contents
 
-1.  [Requirements](#org888d782)
-2.  [Quick Start](#org4c618af)
-3.  [Backup philosophy](#org5e674a8)
-4.  [License](#org57dda06)
+1.  [Requirements](#orgbbb7b61)
+2.  [Quick Start](#org43dda59)
+3.  [Backup philosophy and features](#org93ce3b6)
+4.  [License](#orgfacec92)
 
 Simple backup system for Linux users who use `emacs` a lot.
 
 
-<a id="org888d782"></a>
+<a id="orgbbb7b61"></a>
 
 # Requirements
 
-1.  `emacs`, `mktemp`, `tar`, `gpg` (all available from standard linux packages),
+1.  `emacs`, `mktemp`, `tar`, `gpg`, `grep`, `uniq` (all available from standard linux packages),
 2.  elisp part of my [lisp-goodies](https://github.com/chalaev/lisp-goodies) project, and
 3.  [~/.emacs.d/batch-start.el](https://github.com/chalaev/lisp-goodies/blob/master/packaged/batch-start.el) (needed for `emacsclient` called in [el-backup](el-backup)).
 
 
-<a id="org4c618af"></a>
+<a id="org43dda59"></a>
 
 # Quick Start
 
@@ -37,11 +37,17 @@ Simple backup system for Linux users who use `emacs` a lot.
     Their encrypted copies in remote directory will be `X-Y-Z.gpg` and `X-Y-Z.user.gpg`
 
 
-<a id="org5e674a8"></a>
+<a id="org93ce3b6"></a>
 
-# Backup philosophy
+# Backup philosophy and features
 
-Only recently modified (later than the previous backup) files will be archived.
+Only **recently modified** (later than the previous backup) files will be archived.
+This means that renamed or moved/downloaded files *will not* be queued for the next backup unless they have recent modification date.
+However, such files will be included in the next major archive.
+
+A user can manually mark files in a directory as temporary by placing their name into the file
+`.temp.files` in the same directory. These files will be erased when they become older than two weeks.
+
 By default non-text files are ignored; still binary files can be archived if
 
 -   they have "white" extension, or
@@ -57,7 +63,7 @@ There is no special command to restore the files; the user is supposed to do it 
 3.  If needed, decrypt the archive. Extract the file from the `tar` archive.
 
 
-<a id="org57dda06"></a>
+<a id="orgfacec92"></a>
 
 # License
 

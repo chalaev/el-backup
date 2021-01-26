@@ -1,7 +1,7 @@
 Simple backup system for Linux users who use ~emacs~ a lot.
 
 * Requirements
-1. =emacs=, =mktemp=, =tar=, =gpg= (all available from standard linux packages),
+1. =emacs=, =mktemp=, =tar=, =gpg=, =grep=, =uniq= (all available from standard linux packages),
 2. elisp part of my [[https://github.com/chalaev/lisp-goodies][lisp-goodies]] project, and
 3. [[https://github.com/chalaev/lisp-goodies/blob/master/packaged/batch-start.el][~/.emacs.d/batch-start.el]] (needed for =emacsclient= called in [[file:el-backup][el-backup]]).
 
@@ -20,8 +20,14 @@ Simple backup system for Linux users who use ~emacs~ a lot.
    This will create files =X-Y-Z.tar.bz2= and =X-Y-Z/user.list.gz= (locally on your computer) where X, Y, Z are non-negative integers.
    Their encrypted copies in remote directory will be =X-Y-Z.gpg= and =X-Y-Z.user.gpg=
 
-* Backup philosophy
-Only recently modified (later than the previous backup) files will be archived.
+* Backup philosophy and features
+Only *recently modified* (later than the previous backup) files will be archived.
+This means that renamed or moved/downloaded files /will not/ be queued for the next backup unless they have recent modification date.
+However, such files will be included in the next major archive.
+
+A user can manually mark files in a directory as temporary by placing their name into the file
+=.temp.files= in the same directory. These files will be erased when they become older than two weeks.
+
 By default non-text files are ignored; still binary files can be archived if
 - they have "white" extension, or
 - their group is "white", or

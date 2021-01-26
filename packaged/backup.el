@@ -3,7 +3,7 @@
 ;; Copyright (C) 2020 Oleg Shalaev <oleg@chalaev.com>
 
 ;; Author:     Oleg Shalaev <oleg@chalaev.com>
-;; Version:    0.2.1
+;; Version:    0.2.2
 
 ;; Package-Requires: (shalaev)
 ;; Keywords:   backup, gpg, encryption

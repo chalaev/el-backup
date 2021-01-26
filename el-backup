@@ -40,8 +40,16 @@ then
 elif [ -d $1 ]
 then
     echo "exploring directory $1"
-    files=`find $1 -type f -cnewer ${previousArchive}`
-    collect $localDir ${MMM} $files
+    newFiles=`find $1 -type f -cnewer ${previousArchive}`
+    collect $localDir ${MMM} $newFiles
+    if ! [ -z $2 ]; then # if it is major release
+	echo "this is major release"
+	newNames=`find $1 -type f -print | grep -Fxvf ${MMM}/previous`
+	if [ -n $newNames ]; then
+	    echo $newNames >> ${MMM}/new
+	    collect $localDir ${MMM} $newNames
+	fi
+    fi
 fi
 }
 ################# locking the directory
@@ -84,18 +92,24 @@ if [ $micro -gt $maxMicro ]; then
     if [ $meso -gt 0 ]; then
 	if [ $prevMeso -gt 1 ]; then
 	    ppMeso=$(( $prevMeso - 1 ))
-	    
-	    tmpDir=`mktemp -d -p ${localDir}$`
-	    mv ${localDir}${macro}-${ppMeso}-0* $tmpDir/
-	    rm -r ${localDir}${macro}-${ppMeso}-*-
-	    mv $tmpDir/* ${localDir}
-	    rmdir $tmpDir
-	    
-	    tmpDir=`mktemp -d -p ${remoteDir}$`
-	    mv ${remoteDir}${macro}-${ppMeso}-0* $tmpDir/
-	    rm -r ${remoteDir}${macro}-${ppMeso}-*-
-	    mv $tmpDir/* ${remoteDir}
-	    rmdir $tmpDir
+	    tmpDir=`mktemp -d -p ${localDir}`
+	    if ! [ -z $tmpDir ]; then
+		mv ${localDir}${macro}-${ppMeso}-0* $tmpDir/
+		rm -r ${localDir}${macro}-${ppMeso}-*
+		mv $tmpDir/* ${localDir}
+		rmdir $tmpDir
+	    else
+		echo "could not create temp dir in ${localDir}"
+	    fi
+	    tmpDir=`mktemp -d -p ${remoteDir}`
+	    if ! [ -z $tmpDir ]; then
+		mv ${remoteDir}${macro}-${ppMeso}-0* $tmpDir/
+		rm -r ${remoteDir}${macro}-${ppMeso}-*
+		mv $tmpDir/* ${remoteDir}
+		rmdir $tmpDir
+	    else
+		echo "could not create temp dir in ${remoteDir}"
+	    fi
 	fi
     fi
     meso=$(( 1 + $meso ))
@@ -107,18 +121,24 @@ if [ $meso -gt $maxMeso ]; then
     if [ $macro -gt 0 ]; then
 	if [ $prevMacro -gt 1 ]; then
 	    ppMacro=$(( $prevMacro - 1 ))
-
-	    tmpDir=`mktemp -d -p ${localDir}$`
-	    mv ${localDir}${ppMacro}-0-0* $tmpDir/
-	    rm -r ${localDir}${ppMacro}-*-
-	    mv $tmpDir/* ${localDir}
-	    rmdir $tmpDir
-	    
-	    tmpDir=`mktemp -d -p ${remoteDir}$`
-	    mv ${remoteDir}${ppMacro}-0-0* $tmpDir/
-	    rm -r ${remoteDir}${ppMacro}-*-
-	    mv $tmpDir/* ${remoteDir}
-	    rmdir $tmpDir
+	    tmpDir=`mktemp -d -p ${localDir}`
+	    if ! [ -z $tmpDir ]; then
+		mv ${localDir}${ppMacro}-0-0* $tmpDir/
+		rm -r ${localDir}${ppMacro}-*
+		mv $tmpDir/* ${localDir}
+		rmdir $tmpDir
+	    else
+		echo "could not create temp dir in ${localDir}"
+	    fi
+	    tmpDir=`mktemp -d -p ${remoteDir}`
+	    if ! [ -z $tmpDir ]; then
+		mv ${remoteDir}${ppMacro}-0-0* $tmpDir/
+		rm -r ${remoteDir}${ppMacro}-*
+		mv $tmpDir/* ${remoteDir}
+		rmdir $tmpDir
+	    else
+		echo "could not create temp dir in ${remoteDir}"
+	    fi
 	fi
     fi
     macro=$(( 1 + $macro ))
@@ -139,12 +159,25 @@ touch -r $OBV ${PBD}
 chmod a+r ${PBD}
 
 if ! [ -d ${localDir}${MMM} ]; then
-    mkdir ${localDir}${MMM} && chgrp tmp ${localDir}${MMM} && chmod o+rwx ${localDir}${MMM}
+    mkdir ${localDir}${MMM} && chgrp tmp ${localDir}${MMM} && chmod go+rwx ${localDir}${MMM}
+fi
+
+if [ ${meso} -eq 0 ] && [ ${micro} -eq 0 ]; then
+    zcat ${localDir}*.gz | uniq -u > ${MMM}/previous
 fi
 
 # the following loop creates list of (text and not too large) files to be archieved:
+# if [ $meso -gt $maxMeso ]; then
+#     knownFNs=`mktemp -p ${localDir}`
+# fi
+
 for file in $sysFiles; do
-    process_object $file
+    if [ ${meso} -eq 0 ] && [ ${micro} -eq 0 ]; then
+	echo "hurray, it's major release ${macro}!"
+	process_object $file 1
+    else
+	process_object $file
+    fi
 done
 
 RL=${localDir}${MMM}/root.list
@@ -175,6 +208,13 @@ done
 # created /mnt/junk/backup/0-0-0.shalaev.list + /mnt/junk/backup/0-0-0.shalaev.rejected
 
 touch ${PBD}
+
+if [ -f ${MMM}/previous ]; then
+    gzip ${MMM}/previous
+fi
+if [ -f ${MMM}/new ]; then
+    gzip ${MMM}/new
+fi
 
 echo "copying archieve to the cloud"
 
