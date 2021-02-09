@@ -55,7 +55,7 @@ I would like to get rid of =file-fields= here and in the [[https://github.com/ch
 #+END_SRC
 Reading configuration:
 #+BEGIN_SRC emacs-lisp :tangle generated/backup.el
-(update-conf (read-conf) (append str-params lists-of-strings))
+(update-conf (funcall read-conf) (append str-params lists-of-strings))
 #+END_SRC
 ← to be moved into the (defined below) main function =backup-do=.
 
@@ -95,7 +95,7 @@ Here is the main (recursive) function:
 (let((DN(file-name-as-directory(or DN ~))) (rec-number(or rec-number 0)))
 ;;(clog :info "scanning dir %s" DN)
   (if(< maxDirRecursion rec-number) (clog :error "reached max dir recursion=%d for %s" maxDirRecursion DN)
-    (dolist (LN (directory-files DN nil nil t))
+    (dolist(LN(error-in(format "scanning %s" DN)(directory-files DN nil nil t)))
       (unless(member LN '("." "..")); warning: LN is INCOMPLETE file name
 	(let((FN (concat DN LN)))
 	  (if(file-directory-p FN)

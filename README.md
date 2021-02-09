@@ -1,15 +1,15 @@
 
 # Table of Contents
 
-1.  [Requirements](#orgbbb7b61)
-2.  [Quick Start](#org43dda59)
-3.  [Backup philosophy and features](#org93ce3b6)
-4.  [License](#orgfacec92)
+1.  [Requirements](#org13dc142)
+2.  [Quick Start](#orgf1e7875)
+3.  [Backup policy and features](#org21e60d0)
+4.  [License](#orgbcd26c2)
 
 Simple backup system for Linux users who use `emacs` a lot.
 
 
-<a id="orgbbb7b61"></a>
+<a id="org13dc142"></a>
 
 # Requirements
 
@@ -18,7 +18,7 @@ Simple backup system for Linux users who use `emacs` a lot.
 3.  [~/.emacs.d/batch-start.el](https://github.com/chalaev/lisp-goodies/blob/master/packaged/batch-start.el) (needed for `emacsclient` called in [el-backup](el-backup)).
 
 
-<a id="org43dda59"></a>
+<a id="orgf1e7875"></a>
 
 # Quick Start
 
@@ -37,9 +37,9 @@ Simple backup system for Linux users who use `emacs` a lot.
     Their encrypted copies in remote directory will be `X-Y-Z.gpg` and `X-Y-Z.user.gpg`
 
 
-<a id="org93ce3b6"></a>
+<a id="org21e60d0"></a>
 
-# Backup philosophy and features
+# Backup policy and features
 
 Only **recently modified** (later than the previous backup) files will be archived.
 This means that renamed or moved/downloaded files *will not* be queued for the next backup unless they have recent modification date.
@@ -63,7 +63,7 @@ There is no special command to restore the files; the user is supposed to do it 
 3.  If needed, decrypt the archive. Extract the file from the `tar` archive.
 
 
-<a id="orgfacec92"></a>
+<a id="orgbcd26c2"></a>
 
 # License
 

@@ -36,7 +36,7 @@ conf))
 'modes))); permissions
 (let((i 0)) (dolist (field-name file-fields) (setf i (1+ (set field-name i)))))
 
-(update-conf (read-conf) (append str-params lists-of-strings))
+(update-conf (funcall read-conf) (append str-params lists-of-strings))
 
 (defun backup-black-p(FN &optional FR)
 (ifn-let ((FR(or FR(get-file-properties FN)))) t
@@ -68,7 +68,7 @@ conf))
 (let((DN(file-name-as-directory(or DN ~))) (rec-number(or rec-number 0)))
 ;;(clog :info "scanning dir %s" DN)
   (if(< maxDirRecursion rec-number) (clog :error "reached max dir recursion=%d for %s" maxDirRecursion DN)
-    (dolist (LN (directory-files DN nil nil t))
+    (dolist(LN(error-in(format "scanning %s" DN)(directory-files DN nil nil t)))
       (unless(member LN '("." "..")); warning: LN is INCOMPLETE file name
 	(let((FN (concat DN LN)))
 	  (if(file-directory-p FN)

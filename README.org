@@ -20,7 +20,7 @@ Simple backup system for Linux users who use ~emacs~ a lot.
    This will create files =X-Y-Z.tar.bz2= and =X-Y-Z/user.list.gz= (locally on your computer) where X, Y, Z are non-negative integers.
    Their encrypted copies in remote directory will be =X-Y-Z.gpg= and =X-Y-Z.user.gpg=
 
-* Backup philosophy and features
+* Backup policy and features
 Only *recently modified* (later than the previous backup) files will be archived.
 This means that renamed or moved/downloaded files /will not/ be queued for the next backup unless they have recent modification date.
 However, such files will be included in the next major archive.

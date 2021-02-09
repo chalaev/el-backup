@@ -19,7 +19,7 @@ fi
 
 . /usr/local/bin/el-backup/common.sh
 readConf $secretConf password remoteDir users sysFiles
-readConf $publicConf localDir maxMicro maxMeso # these data will be read by elisp as well
+readConf $publicConf localDir maxMicro maxMeso # these variables will be read by elisp as well
 
 if ! [ -d ${localDir} ]; then
     echo "refuse to start because local backup directory ${localDir} (defined in $publicConf) does not exist"
@@ -82,6 +82,10 @@ prevMacro=$macro
 
 MMM=${macro}-${meso}-${micro}
 OBV=${localDir}${MMM}/backup.version
+if ! [ -d ${localDir}${MMM} ]; then
+    echo "have to create missing ${localDir}${MMM}"
+    mkdir ${localDir}${MMM}
+fi
 cp -a ${localDir}backup.version $OBV
 
 micro=$(( 1 + $micro ))
@@ -95,7 +99,9 @@ if [ $micro -gt $maxMicro ]; then
 	    tmpDir=`mktemp -d -p ${localDir}`
 	    if ! [ -z $tmpDir ]; then
 		mv ${localDir}${macro}-${ppMeso}-0* $tmpDir/
+		echo "rm -r ${localDir}${macro}-${ppMeso}-*"
 		rm -r ${localDir}${macro}-${ppMeso}-*
+		echo "mv $tmpDir/* ${localDir}"
 		mv $tmpDir/* ${localDir}
 		rmdir $tmpDir
 	    else
@@ -104,7 +110,9 @@ if [ $micro -gt $maxMicro ]; then
 	    tmpDir=`mktemp -d -p ${remoteDir}`
 	    if ! [ -z $tmpDir ]; then
 		mv ${remoteDir}${macro}-${ppMeso}-0* $tmpDir/
+		echo "rm -r ${remoteDir}${macro}-${ppMeso}-*"
 		rm -r ${remoteDir}${macro}-${ppMeso}-*
+		echo "$tmpDir/* ${remoteDir}"
 		mv $tmpDir/* ${remoteDir}
 		rmdir $tmpDir
 	    else
@@ -124,7 +132,9 @@ if [ $meso -gt $maxMeso ]; then
 	    tmpDir=`mktemp -d -p ${localDir}`
 	    if ! [ -z $tmpDir ]; then
 		mv ${localDir}${ppMacro}-0-0* $tmpDir/
+		echo "rm -r ${localDir}${ppMacro}-*"
 		rm -r ${localDir}${ppMacro}-*
+		echo "mv $tmpDir/* ${localDir}"
 		mv $tmpDir/* ${localDir}
 		rmdir $tmpDir
 	    else
@@ -133,7 +143,9 @@ if [ $meso -gt $maxMeso ]; then
 	    tmpDir=`mktemp -d -p ${remoteDir}`
 	    if ! [ -z $tmpDir ]; then
 		mv ${remoteDir}${ppMacro}-0-0* $tmpDir/
+		echo "rm -r ${remoteDir}${ppMacro}-*"
 		rm -r ${remoteDir}${ppMacro}-*
+		echo "mv $tmpDir/* ${remoteDir}"
 		mv $tmpDir/* ${remoteDir}
 		rmdir $tmpDir
 	    else
@@ -193,7 +205,7 @@ GPG="gpg --batch --yes --pinentry-mode loopback --passphrase \"$password\" -o"
 # user files will be selected by elisp (emacs):
 for user in $users; do
     echo "selecting files for $user"
-    su $user -c "emacsclient -e \"(progn (require 'backup) (backup-do))\"  || emacs -q --no-site-file --batch -l ~/.emacs.d/batch-start.el -l backup -f backup-do"
+    su $user -c "cd \$HOME; emacsclient -e \"(progn (require 'backup) (backup-do))\"  || emacs -q --no-site-file --batch -l ~/.emacs.d/batch-start.el -l backup -f backup-do"
     if [ -f ${localDir}${MMM}/${user}.list ]; then
 	tar uf ${localDir}${MMM}.tar --files-from=${localDir}${MMM}/${user}.list
 	if `mkdir ${remoteDir}lock`

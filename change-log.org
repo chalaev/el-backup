@@ -1,7 +1,12 @@
 * initial release
 ** Corrected dangerous error
+*** 02/09
+1. small correction in the [[file:el-backup][shell script]]: prevented it from stopping in case the directory ${localDir}${MMM} does not exist.
+2. in [[file:backup.org][elisp-code]]: now treating condition when a directory is not readable.
+3. ~(read-conf)~ → ~(funcall read-conf)~
+
 *** 01/26
-The update 01/13 damaged my linux system; hopefully no one suffered from it.
+The update 01/13 damaged my linux system; hopefully no one else suffered from it.
 
 ** Corrected (bash) cleaning block
 It was removing more older archives than it should.

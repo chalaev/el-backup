@@ -1,0 +1,6 @@
+#!/bin/bash
+backup=/usr/local/bin/el-backup/el-backup
+log=/tmp/el-backup.log
+echo "========" >> $log
+date -I >> $log
+! which ${backup} > /dev/null || nice -n 19 ${backup} &>> $log

@@ -1,4 +1,5 @@
-* Motivation
+*Motivation*
+
 For 10+ years I used [[https://github.com/gkiefer/backup2l][backup2l]], but in December 2020 I've got problems with it and realized that
 1. its code is long and has no comments/explanations so that it would take too much time for me to analyze it,
 2. it lacks logging /during/ backup process,
