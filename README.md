@@ -1,24 +1,24 @@
 
 # Table of Contents
 
-1.  [Requirements](#org13dc142)
-2.  [Quick Start](#orgf1e7875)
-3.  [Backup policy and features](#org21e60d0)
-4.  [License](#orgbcd26c2)
+1.  [Requirements](#orgfcbec2b)
+2.  [Quick Start](#org6c5af7f)
+3.  [Backup policy and features](#org8334dc9)
+4.  [License](#org888c5a3)
 
 Simple backup system for Linux users who use `emacs` a lot.
 
 
-<a id="org13dc142"></a>
+<a id="orgfcbec2b"></a>
 
 # Requirements
 
 1.  `emacs`, `mktemp`, `tar`, `gpg`, `grep`, `uniq` (all available from standard linux packages),
-2.  elisp part of my [lisp-goodies](https://github.com/chalaev/lisp-goodies) project, and
-3.  [~/.emacs.d/batch-start.el](https://github.com/chalaev/lisp-goodies/blob/master/packaged/batch-start.el) (needed for `emacsclient` called in [el-backup](el-backup)).
+2.  [elisp part](https://github.com/chalaev/lisp-goodies/blob/master/packaged/shalaev.el) of my [lisp-goodies](https://github.com/chalaev/lisp-goodies) project, and
+3.  [~/.emacs.d/start.el](https://github.com/chalaev/lisp-goodies/blob/master/packaged/start.el) (needed for `emacsclient` called in [el-backup](el-backup)).
 
 
-<a id="orgf1e7875"></a>
+<a id="org6c5af7f"></a>
 
 # Quick Start
 
@@ -31,13 +31,13 @@ Simple backup system for Linux users who use `emacs` a lot.
     and edit it.
 4.  Create group `tmp`; the code uses it to mark temporary files.
 5.  Copy [packaged/backup.el](packaged/backup.el) to `~/.emacs.d/local-packages/`.
-    ([~/.emacs.d/batch-start.el](https://github.com/chalaev/lisp-goodies/blob/master/packaged/batch-start.el) will configure emacs to load [backup.el](packaged/backup.el) from there.)
+    ([~/.emacs.d/start.el](https://github.com/chalaev/lisp-goodies/blob/master/packaged/start.el) will configure emacs to load [backup.el](packaged/backup.el) from there.)
 6.  Run [/usr/local/bin/el-backup/el-backup](el-backup) daily with root privileges.
     This will create files `X-Y-Z.tar.bz2` and `X-Y-Z/user.list.gz` (locally on your computer) where X, Y, Z are non-negative integers.
     Their encrypted copies in remote directory will be `X-Y-Z.gpg` and `X-Y-Z.user.gpg`
 
 
-<a id="org21e60d0"></a>
+<a id="org8334dc9"></a>
 
 # Backup policy and features
 
@@ -63,9 +63,9 @@ There is no special command to restore the files; the user is supposed to do it 
 3.  If needed, decrypt the archive. Extract the file from the `tar` archive.
 
 
-<a id="orgbcd26c2"></a>
+<a id="org888c5a3"></a>
 
 # License
 
-This code is released under [MIT license](https://mit-license.org/).
+This code is released under [GPL 3.0 license](LICENSE).
 

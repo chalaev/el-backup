@@ -64,7 +64,7 @@ then
 fi
 }
 
-# Typical usage:  collect directory I J K [list of many file names]
+# Typical usage:  collect directory I-J-K [list of many file names]
 function collect {
 local local_dir=$1
 shift

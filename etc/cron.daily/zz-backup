@@ -1,6 +1,10 @@
 #!/bin/bash
+# just in case copying to remote server takes too much time,
+# let us block automatic re-running this script until it is finished:
+chmod a-x $0
 backup=/usr/local/bin/el-backup/el-backup
 log=/tmp/el-backup.log
 echo "========" >> $log
 date -I >> $log
 ! which ${backup} > /dev/null || nice -n 19 ${backup} &>> $log
+chmod a+x $0

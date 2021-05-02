@@ -1,11 +1,11 @@
 ;;; backup.el --- daily backup for text files  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020 Oleg Shalaev <oleg@chalaev.com>
+;; Copyright (C) 2021 Oleg Shalaev <oleg@chalaev.com>
 
 ;; Author:     Oleg Shalaev <oleg@chalaev.com>
 ;; Version:    the-version
 
-;; Package-Requires: (shalaev)
+;; Package-Requires: (shalaev cl-lib)
 ;; Keywords:   backup, gpg, encryption
 ;; URL:        https://github.com/chalaev/el-backup
 

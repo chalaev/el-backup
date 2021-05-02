@@ -12,14 +12,14 @@ packaged/backup.el: version.org generated/from/backup.org packaged/
 	emacsclient -e '(untilde (cdr (assoc "local-packages" package-archives)))' | xargs cp $@
 	-@chgrp tmp $@
 
-version.org: change-log.org helpers/derive-version.el
-	emacsclient -e '(progn (load "$(CURDIR)/helpers/derive-version.el") (format-version "$<"))' | xargs echo > $@
+version.org: change-log.org
+	emacsclient -e "(progn  (require 'version) (format-version \"$<\"))" | xargs echo > $@
 	@echo "← generated `date '+%m/%d %H:%M'` from [[file:$<][$<]]" >> $@
-	@echo "by [[file:helpers/derive-version.el][derive-version.el]]" >> $@
+	@echo "by [[https://github.com/chalaev/lisp-goodies/blob/master/packaged/version.el][version.el]]" >> $@
 	-@chgrp tmp $@
 
 generated/from/%.org: %.org generated/from/
-	emacsclient -e '(progn (load "$(CURDIR)/helpers/derive-version.el") (printangle "$<"))' | xargs echo > $@
+	emacsclient -e "(progn (require 'version) (printangle \"$<\"))" | sed 's/"//g' > $@
 	-@chgrp tmp $@ `cat $@`
 	-@chmod a-x `cat $@`
 

@@ -43,10 +43,16 @@ then
     newFiles=`find $1 -type f -cnewer ${previousArchive}`
     collect $localDir ${MMM} $newFiles
     if ! [ -z $2 ]; then # if it is major release
-	echo "this is major release"
-	newNames=`find $1 -type f -print | grep -Fxvf ${MMM}/previous`
-	if [ -n $newNames ]; then
-	    echo $newNames >> ${MMM}/new
+	echo "*this is major release*"
+	if [ -f ${localDir}${MMM}/previous ]; then
+	    newNames=`find $1 -type f -print | grep -Fxvf ${localDir}${MMM}/previous`
+	else
+	    echo "error: there is no file ${localDir}${MMM}/previous"
+	    newNames=`find $1 -type f -print`
+	fi
+	if [ -n "$newNames" ]; then
+	    echo "creating ${localDir}${MMM}/new"
+	    echo $newNames >> ${localDir}${MMM}/new
 	    collect $localDir ${MMM} $newNames
 	fi
     fi
@@ -96,28 +102,8 @@ if [ $micro -gt $maxMicro ]; then
     if [ $meso -gt 0 ]; then
 	if [ $prevMeso -gt 1 ]; then
 	    ppMeso=$(( $prevMeso - 1 ))
-	    tmpDir=`mktemp -d -p ${localDir}`
-	    if ! [ -z $tmpDir ]; then
-		mv ${localDir}${macro}-${ppMeso}-0* $tmpDir/
-		echo "rm -r ${localDir}${macro}-${ppMeso}-*"
-		rm -r ${localDir}${macro}-${ppMeso}-*
-		echo "mv $tmpDir/* ${localDir}"
-		mv $tmpDir/* ${localDir}
-		rmdir $tmpDir
-	    else
-		echo "could not create temp dir in ${localDir}"
-	    fi
-	    tmpDir=`mktemp -d -p ${remoteDir}`
-	    if ! [ -z $tmpDir ]; then
-		mv ${remoteDir}${macro}-${ppMeso}-0* $tmpDir/
-		echo "rm -r ${remoteDir}${macro}-${ppMeso}-*"
-		rm -r ${remoteDir}${macro}-${ppMeso}-*
-		echo "$tmpDir/* ${remoteDir}"
-		mv $tmpDir/* ${remoteDir}
-		rmdir $tmpDir
-	    else
-		echo "could not create temp dir in ${remoteDir}"
-	    fi
+	    find "${localDir}"   -name "${ppMacro}-${ppMeso}-*" -not -name "${ppMacro}-${ppMeso}-0*" -exec rm -r {} \;
+	    find "${remoteDir}"  -name "${ppMacro}-${ppMeso}-*" -not -name "${ppMacro}-${ppMeso}-0*" -exec rm -r {} \;
 	fi
     fi
     meso=$(( 1 + $meso ))
@@ -129,28 +115,8 @@ if [ $meso -gt $maxMeso ]; then
     if [ $macro -gt 0 ]; then
 	if [ $prevMacro -gt 1 ]; then
 	    ppMacro=$(( $prevMacro - 1 ))
-	    tmpDir=`mktemp -d -p ${localDir}`
-	    if ! [ -z $tmpDir ]; then
-		mv ${localDir}${ppMacro}-0-0* $tmpDir/
-		echo "rm -r ${localDir}${ppMacro}-*"
-		rm -r ${localDir}${ppMacro}-*
-		echo "mv $tmpDir/* ${localDir}"
-		mv $tmpDir/* ${localDir}
-		rmdir $tmpDir
-	    else
-		echo "could not create temp dir in ${localDir}"
-	    fi
-	    tmpDir=`mktemp -d -p ${remoteDir}`
-	    if ! [ -z $tmpDir ]; then
-		mv ${remoteDir}${ppMacro}-0-0* $tmpDir/
-		echo "rm -r ${remoteDir}${ppMacro}-*"
-		rm -r ${remoteDir}${ppMacro}-*
-		echo "mv $tmpDir/* ${remoteDir}"
-		mv $tmpDir/* ${remoteDir}
-		rmdir $tmpDir
-	    else
-		echo "could not create temp dir in ${remoteDir}"
-	    fi
+	    find "${localDir}"  -name "${ppMacro}-*" -not -name "${ppMacro}-0-0*" -exec rm -r {} \;
+	    find "${remoteDir}" -name "${ppMacro}-*" -not -name "${ppMacro}-0-0*" -exec rm -r {} \;
 	fi
     fi
     macro=$(( 1 + $macro ))
@@ -175,7 +141,9 @@ if ! [ -d ${localDir}${MMM} ]; then
 fi
 
 if [ ${meso} -eq 0 ] && [ ${micro} -eq 0 ]; then
-    zcat ${localDir}*.gz | uniq -u > ${MMM}/previous
+    echo "it is major backup, so creating ${MMM}/previous"
+    zcat ${localDir}*-*-*/*.list.gz | uniq -u > ${localDir}${MMM}/previous
+    chmod a+r ${localDir}${MMM}/previous ${localDir}${MMM}/new
 fi
 
 # the following loop creates list of (text and not too large) files to be archieved:
@@ -185,7 +153,6 @@ fi
 
 for file in $sysFiles; do
     if [ ${meso} -eq 0 ] && [ ${micro} -eq 0 ]; then
-	echo "hurray, it's major release ${macro}!"
 	process_object $file 1
     else
 	process_object $file
@@ -205,7 +172,7 @@ GPG="gpg --batch --yes --pinentry-mode loopback --passphrase \"$password\" -o"
 # user files will be selected by elisp (emacs):
 for user in $users; do
     echo "selecting files for $user"
-    su $user -c "cd \$HOME; emacsclient -e \"(progn (require 'backup) (backup-do))\"  || emacs -q --no-site-file --batch -l ~/.emacs.d/batch-start.el -l backup -f backup-do"
+    su $user -c "cd \$HOME; emacsclient -e \"(progn (require 'backup) (backup-do))\"  || emacs -q --no-site-file --batch -l ~/.emacs.d/start.el -l backup -f backup-do"
     if [ -f ${localDir}${MMM}/${user}.list ]; then
 	tar uf ${localDir}${MMM}.tar --files-from=${localDir}${MMM}/${user}.list
 	if `mkdir ${remoteDir}lock`
@@ -214,28 +181,33 @@ for user in $users; do
 	    gzip ${localDir}${MMM}/${user}.*
 	    chgrp tmp ${localDir}${MMM}/${user}.*
 	    rmdir ${remoteDir}lock
+	else
+	    echo "cannot upload list of files because ${remoteDir}lock exists"
 	fi
     fi
 done
-# created /mnt/junk/backup/0-0-0.shalaev.list + /mnt/junk/backup/0-0-0.shalaev.rejected
 
 touch ${PBD}
 
-if [ -f ${MMM}/previous ]; then
-    gzip ${MMM}/previous
+if [ -f ${localDir}${MMM}/previous ]; then
+    gzip ${localDir}${MMM}/previous
 fi
-if [ -f ${MMM}/new ]; then
-    gzip ${MMM}/new
+
+if [ -f ${localDir}${MMM}/new ]; then
+    gzip ${localDir}${MMM}/new
 fi
 
 echo "copying archieve to the cloud"
 
 if `mkdir ${remoteDir}lock`; then # checkinng if remote dir is mounted
     $GPG ${remoteDir}${MMM}.gpg --symmetric ${localDir}${MMM}.tar && \
-rmdir ${remoteDir}lock && rmdir ${lock} && echo "backup finished" || echo "something went wrong"
+	rmdir ${remoteDir}lock && rmdir ${lock} && echo "backup finished" || echo "something went wrong"
+else
+    echo "cannot upload archive because ${remoteDir}lock exists"
 fi
 # it is useful to have local archive copy:
 bzip2 ${localDir}${MMM}.tar
+chmod o-r ${localDir}${MMM}.tar.bz2
 else
     echo "DOING NOTHING because lock file/dir $lock detected"
 fi

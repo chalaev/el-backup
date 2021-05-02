@@ -1,4 +1,21 @@
+* changed license to GPL 3.0
+*** 05/02
+1. added [[file:LICENSE][LICENSE]] file (GPL 3.0)
+2. updated [[file:README.org][README]]
+3. now using =cl-lib=
+4. now using =letc= from [[https://github.com/chalaev/lisp-goodies/blob/master/packaged/shalaev.el][lisp-goodies]] to read configuration files
+
 * initial release
+** debugging and optimization
+*** 02/20
+1. removed most of debugging messages
+2. simplified section "removing obsolete archives if needed" in [[file:el-backup][el-backup]]
+3. elisp code now saves more (or even all) files during major backup
+4. removed  =helpers/derive-version.el=
+5. simplified el-code by replacing =update-conf= → =let-conf=
+6. no more symlinks following
+7. added =black-names=
+
 ** Corrected dangerous error
 *** 02/09
 1. small correction in the [[file:el-backup][shell script]]: prevented it from stopping in case the directory ${localDir}${MMM} does not exist.
